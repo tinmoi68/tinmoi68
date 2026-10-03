@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install feedparser firebase-admin deep-translator
+          pip install feedparser firebase-admin deep-translator beautifulsoup4 requests
 
       - name: Run Auto News Script
         run: python auto_news.py
