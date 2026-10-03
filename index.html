@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Quản Trị Admin - TinMoi68</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col justify-between font-sans">
+
+    <!-- Header Admin -->
+    <header class="bg-gray-900 text-white py-4 px-6 shadow-md">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <h1 class="text-xl font-bold">TinMoi68 - Admin Dashboard</h1>
+            </div>
+            <a href="index.html" class="text-sm bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-gray-300 transition">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Xem Trang Chủ
+            </a>
+        </div>
+    </header>
+
+    <!-- Màn Hình Đăng Nhập (Login Screen) -->
+    <div id="loginSection" class="my-auto py-12 px-4 flex justify-center items-center">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-gray-200">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Đăng Nhập Quản Trị</h2>
+                <p class="text-xs text-gray-500 mt-1">Vui lòng nhập tài khoản để đăng bài viết mới</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Tài khoản</label>
+                    <input type="text" id="loginUser" required placeholder="Nhập username..." class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Mật khẩu</label>
+                    <input type="password" id="loginPass" required placeholder="Nhập password..." class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition">
+                    Đăng Nhập
+                </button>
+            </form>
+            <p class="text-xs text-center text-gray-400 mt-4">Tài khoản mặc định: <b>admin</b> | Mật khẩu: <b>123456</b></p>
+        </div>
+    </div>
+
+    <!-- Màn Hình Đăng Bài (Hidden By Default) -->
+    <main id="adminContent" class="hidden max-w-4xl w-full mx-auto px-4 py-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
+            <div class="flex justify-between items-center border-b pb-4 mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-blue-600"></i> Đăng Bài Viết Mới Hàng Ngày
+                </h2>
+                <button onclick="handleLogout()" class="text-xs text-red-600 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg font-semibold transition">
+                    <i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất
+                </button>
+            </div>
+
+            <form id="addArticleForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
+                <!-- Tiêu đề -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tiêu Đề Bài Viết *</label>
+                    <input type="text" id="title" required placeholder="Nhập tiêu đề tin tức nổi bật..." 
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Danh mục -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Danh Mục *</label>
+                        <select id="category" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 text-sm bg-white">
+                            <option value="Thế giới">Thế giới</option>
+                            <option value="Công nghệ">Công nghệ</option>
+                            <option value="Khoa học">Khoa học</option>
+                            <option value="Kinh tế">Kinh tế</option>
+                            <option value="Đời sống">Đời sống</option>
+                        </select>
+                    </div>
+
+                    <!-- Thời gian đọc -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Thời Gian Đọc</label>
+                        <input type="text" id="readTime" placeholder="VD: 3 phút đọc" value="3 phút đọc" 
+                            class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                </div>
+
+                <!-- URL Hình ảnh -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Đường Dẫn Hình Ảnh (URL)</label>
+                    <input type="url" id="image" placeholder="https://images.unsplash.com/photo-1504711434969-e33886168f5c..." 
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+
+                <!-- Tóm tắt -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tóm Tắt Ngắn *</label>
+                    <textarea id="excerpt" rows="2" required placeholder="Viết 1-2 câu tóm tắt nội dung bài viết..." 
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 text-sm"></textarea>
+                </div>
+
+                <!-- Nội dung chi tiết -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nội Dung Chi Tiết (Hỗ trợ HTML) *</label>
+                    <textarea id="content" rows="6" required placeholder="<p>Nhập nội dung bài viết vào đây...</p>" 
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 text-sm font-mono"></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Đăng Bài Ngay
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-4 text-center text-xs">
+        <p>© 2026 TinMoi68 Admin System.</p>
+    </footer>
+
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Cấu hình Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC3k3AzT-elgmxnFppKkpI7M1SPjHhTrDc",
+            authDomain: "tinmoi68.firebaseapp.com",
+            databaseURL: "https://tinmoi68-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "tinmoi68",
+            storageBucket: "tinmoi68.firebasestorage.app",
+            messagingSenderId: "979322204978",
+            appId: "1:979322204978:web:8794887fc52b98175c9d2b",
+            measurementId: "G-YLRZKY9YSQ"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Xử lý đăng nhập
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('loginUser').value;
+            const pass = document.getElementById('loginPass').value;
+
+            // Kiểm tra mật khẩu (Bạn có thể đổi mật khẩu ở đây)
+            if (user === 'admin' && pass === '123456') {
+                sessionStorage.setItem('isAdminLoggedIn', 'true');
+                showAdminPanel();
+            } else {
+                alert('❌ Sai tài khoản hoặc mật khẩu!');
+            }
+        }
+
+        function showAdminPanel() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('adminContent').classList.remove('hidden');
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('isAdminLoggedIn');
+            location.reload();
+        }
+
+        // Tự động giữ trạng thái đăng nhập trong phiên làm việc
+        if (sessionStorage.getItem('isAdminLoggedIn') === 'true') {
+            showAdminPanel();
+        }
+
+        // Đăng bài viết lên Firebase
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang đăng...';
+
+            const now = new Date();
+            const dateStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+
+            const articleData = {
+                title: document.getElementById('title').value,
+                category: document.getElementById('category').value,
+                readTime: document.getElementById('readTime').value || '3 phút đọc',
+                image: document.getElementById('image').value || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=800&q=80',
+                excerpt: document.getElementById('excerpt').value,
+                content: document.getElementById('content').value,
+                date: dateStr,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            database.ref('articles').push(articleData)
+                .then(() => {
+                    alert('🎉 Đã đăng bài viết mới thành công!');
+                    document.getElementById('addArticleForm').reset();
+                })
+                .catch(error => {
+                    alert('❌ Lỗi khi đăng bài: ' + error.message);
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Đăng Bài Ngay';
+                });
+        }
+    </script>
+</body>
+</html>
