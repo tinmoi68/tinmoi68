@@ -1,0 +1,25 @@
+name: Auto Crawl & Post News
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Tự động chạy 6 tiếng/lần
+  workflow_dispatch: # Cho phép bấm nút chạy thủ công bất kỳ lúc nào
+
+jobs:
+  crawl_and_post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install feedparser firebase-admin deep-translator
+
+      - name: Run Auto News Script
+        run: python auto_news.py
