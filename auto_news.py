@@ -5,7 +5,8 @@ import time
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
-from deep_translator import GoogleTranslator
+from googletrans import Translator
+from deep_translator import GoogleTranslator as DeepGoogleTranslator
 
 # Nguồn tin tức quốc tế
 RSS_SOURCES = [
@@ -28,22 +29,36 @@ RSS_SOURCES = [
 ]
 
 FIREBASE_URL = "https://tinmoi68-default-rtdb.asia-southeast1.firebasedatabase.app/articles.json"
-translator = GoogleTranslator(source='auto', target='vi')
+
+py_translator = Translator()
 
 def translate_text(text):
+    """Hàm dịch Tiếng Việt mạnh mẽ với 2 cơ chế dự phòng"""
     if not text or len(text.strip()) == 0:
         return ""
+    
+    clean_text = text.strip()
+    
+    # Phương án dịch 1: googletrans
     try:
-        # Cắt thành từng đoạn ngắn để dịch không bị lỗi giới hạn ký tự
-        chunks = [text[i:i+2000] for i in range(0, len(text), 2000)]
-        translated_chunks = [translator.translate(c) for c in chunks]
-        return " ".join(translated_chunks)
+        res = py_translator.translate(clean_text, src='auto', dest='vi')
+        if res and res.text:
+            return res.text
     except Exception as e:
-        print(f"Lỗi dịch thuật: {e}")
-        return text
+        pass
+
+    # Phương án dịch 2 dự phòng: deep-translator
+    try:
+        res_deep = DeepGoogleTranslator(source='auto', target='vi').translate(clean_text[:4000])
+        if res_deep:
+            return res_deep
+    except Exception as e:
+        pass
+
+    return clean_text
 
 def extract_full_article_content(article_url):
-    """Mở link bài gốc và cào toàn bộ các đoạn văn bản (paragraphs)"""
+    """Mở link bài gốc và cào các đoạn văn bản chính"""
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
     }
@@ -51,23 +66,21 @@ def extract_full_article_content(article_url):
         response = requests.get(article_url, headers=headers, timeout=10)
         if response.status_code == 200:
             soup = BeautifulSoup(response.content, 'html.parser')
-            # Lấy tất cả các thẻ p nằm trong nội dung bài báo
             paragraphs = soup.find_all('p')
             full_text = []
             for p in paragraphs:
                 txt = p.get_text().strip()
-                # Lọc bỏ các đoạn ngắn hoặc quảng cáo điều hướng
                 if len(txt) > 40 and not txt.startswith("Copyright") and not txt.startswith("Follow"):
                     full_text.append(txt)
             
-            # Chỉ lấy khoảng 8 - 12 đoạn văn bản chính của bài báo
-            return full_text[:12]
+            # Lấy 8 đoạn chính
+            return full_text[:8]
     except Exception as e:
         print(f"Không thể cào toàn văn từ {article_url}: {e}")
     return []
 
 def fetch_and_post_news():
-    print("🚀 Bắt đầu lấy tin tức và cào toàn bộ nội dung chi tiết...")
+    print("🚀 Bắt đầu cào và dịch bài viết sang Tiếng Việt...")
     
     posted_count = 0
     now = datetime.now()
@@ -82,12 +95,13 @@ def fetch_and_post_news():
             title_en = entry.get('title', '')
             summary_en = entry.get('summary', '') or entry.get('description', '')
             
-            # 1. Dịch tiêu đề và tóm tắt
+            # 1. Dịch Tiêu đề & Tóm tắt sang Tiếng Việt
             title_vi = translate_text(title_en)
             excerpt_vi = translate_text(summary_en)
 
-            # 2. Cào toàn bộ nội dung chi tiết bài viết từ Link gốc
-            print(f"📄 Đang cào toàn văn bài viết: {title_en}...")
+            print(f"📄 Đang dịch bài: {title_vi}")
+
+            # 2. Cào và Dịch toàn bộ nội dung chi tiết bài viết
             paragraphs_en = extract_full_article_content(link)
             
             content_html = ""
@@ -96,12 +110,13 @@ def fetch_and_post_news():
                 for p_en in paragraphs_en:
                     p_vi = translate_text(p_en)
                     if p_vi:
-                        translated_paragraphs.append(f"<p class='mb-4'>{p_vi}</p>")
+                        translated_paragraphs.append(f"<p class='mb-4 text-gray-800 dark:text-gray-200 leading-relaxed'>{p_vi}</p>")
+                    time.sleep(0.3) # Nghỉ ngắn giữa các đoạn để không bị chặn IP
                 content_html = "".join(translated_paragraphs)
             else:
                 content_html = f"<p class='mb-4'>{excerpt_vi}</p>"
 
-            content_html += f"<p class='mt-6 text-xs text-gray-500 italic'>Nguồn tin gốc: <a href='{link}' target='_blank' class='text-blue-600 underline'>BBC News</a>. Dịch tự động bởi TinMoi68 Bot.</p>"
+            content_html += f"<p class='mt-6 text-xs text-gray-500 italic border-t pt-3'>Nguồn tin gốc: <a href='{link}' target='_blank' class='text-blue-600 underline'>BBC News</a>. Tổng hợp & dịch tự động bởi TinMoi68 Bot.</p>"
 
             # 3. Lấy hình ảnh bài viết
             image_url = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=800&q=80"
@@ -131,12 +146,12 @@ def fetch_and_post_news():
             try:
                 with urllib.request.urlopen(req) as response:
                     if response.status == 200:
-                        print(f"✅ Đã đăng bài chi tiết: {title_vi}")
+                        print(f"✅ Đã đăng bài Tiếng Việt: {title_vi}")
                         posted_count += 1
             except Exception as e:
                 print(f"❌ Lỗi đẩy bài lên Firebase: {e}")
 
-    print(f"🎉 Hoàn tất! Đã cập nhật {posted_count} bài viết có đầy đủ nội dung.")
+    print(f"🎉 Hoàn tất! Đã cập nhật {posted_count} bài viết Tiếng Việt mới lên TinMoi68.")
 
 if __name__ == '__main__':
     fetch_and_post_news()
